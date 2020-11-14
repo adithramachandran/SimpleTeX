@@ -1,7 +1,10 @@
-(**
-  This is the Abstract Search Tree that represents the
-  SimpleTeX language
-*)
+(* CS 4110 Homework 3
+   This file defines the abstract syntax tree (AST) for the IMP language. You
+   shouldn't need to modify it. *)
+
+(* Parsing information: ((l1,c1),(l2,c2)) represents a symbol
+   appearing at line l1 character c1 to line l2 character c2. *)
+type info = (int * int) * (int * int)
 
 exception SyntaxError
 
@@ -33,11 +36,12 @@ type setting =
   | FontSize of param
   | FontStyle of fontstyle
   | Spacing of linespacing
+  | ListSetting of setting * setting
  
 type text =
-  | Normal of content
-  | Bold of content
-  | Italics of content
+  | NormalText of content
+  (* | Bold of content
+  | Italics of content *)
 
 type bop =
   | Plus
@@ -69,9 +73,9 @@ type equation =
   | Separator of bop
   | Mapping of content * content
   | Inference of (equation list) * equation
-  | Deriv of aexp * aexp
-  | Integ of aexp * aexp * aexp * aexp
-  | Summation of aexp * aexp * aexp * aexp
+  | Deriv of equation * aexp
+  | Integ of equation * equation * equation * aexp
+  | Summation of equation * equation * equation
   | Quality of bop * equation * equation
 
 type table =
@@ -79,11 +83,9 @@ type table =
   | Table of table * table
 
 type environment =
-  | Settings of setting list
+  | Settings of setting
   | Text of text
-  | Equation of equation list
+  | Equation of equation
   | Table of table
-
-type document =
+  | ListEnv of environment * environment
   | Nil
-  | Document of environment * document
