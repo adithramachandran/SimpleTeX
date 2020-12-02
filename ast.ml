@@ -11,6 +11,12 @@ exception SyntaxError
 type param = string
 type content = string
 
+type metadata =
+  | Author of content
+  | Date of content
+  | Title of content
+  | MetadataList of metadata * metadata
+
 type pagestyle = 
   | Letter
   | A4
@@ -40,8 +46,7 @@ type setting =
  
 type text =
   | NormalText of content
-  (* | Bold of content
-  | Italics of content *)
+  | TextList of text * text
 
 type bop =
   | Plus
@@ -83,6 +88,7 @@ type table =
   | Table of table * table
 
 type environment =
+  | Metadata of metadata
   | Settings of setting
   | Text of text
   | Equation of equation

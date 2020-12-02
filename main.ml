@@ -14,4 +14,4 @@ let () =
         !Lexer.lineno
         (Lexing.lexeme_end lexbuf - !Lexer.linestart - 1);
       exit 1 in
-  ignore (Eval.start_eval "output" c)
+  ignore (Eval.start_eval filename c)

@@ -18,6 +18,7 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token TEXT
 %token EQUATION
 %token TABLE
+%token METADATA
 %token PAGESTYLE
 %token PAGEORIENT
 %token MARGINSIZE
@@ -34,6 +35,9 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token SINGLE
 %token ONEPOINTFIVE
 %token DOUBLE
+%token AUTHOR
+%token DATE
+%token TITLE
 
 %start <Ast.environment> prog
 
@@ -45,15 +49,27 @@ prog:
     ;
 
 expr:
+    | LBRACKET; METADATA; RBRACKET; LCURLY; md = metadata_list; RCURLY { Metadata (md) }
     | LBRACKET; SETTINGS; RBRACKET; LCURLY; settings = setting_list; RCURLY { Settings (settings) }  
     | LBRACKET; TEXT; RBRACKET; LCURLY; text = text; RCURLY { Text(text) }
     | LBRACKET; EQUATION; RBRACKET; LCURLY; equation = equation; RCURLY { Equation (equation) }
     | LBRACKET; TABLE; RBRACKET; LCURLY; table = table; RCURLY { Table (table) }
     ;
 
+metadata_list:
+    | m = meta { m }
+    | m1 = meta; SEMI; m2 = metadata_list { MetadataList (m1, m2) }
+    ;
+
+meta:
+    | AUTHOR; COLON; aname = CONTENT { Author (aname) }
+    | DATE; COLON; date = CONTENT { Date (date) }
+    | TITLE; COLON; title = CONTENT { Title (title) }
+    ;
+
 setting_list:
     | s = setting { s }
-    | s1 = setting; SEMI; s2 = setting { ListSetting (s1, s2) }
+    | s1 = setting; SEMI; s2 = setting_list { ListSetting (s1, s2) }
     ;
 
 setting:
@@ -89,6 +105,7 @@ spacing:
 
 text:
     | content = CONTENT { NormalText (content) }
+    | t1 = text; SEMI; t2 = text { TextList (t1, t2) }
     ;
 
 equation:

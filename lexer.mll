@@ -44,11 +44,15 @@ let string = '"' (word | digit | white | symbol)+ '"'
 
 rule read = 
   parse
-  | string { CONTENT (Lexing.lexeme lexbuf) }
+  | string { let s = Lexing.lexeme lexbuf in CONTENT (String.sub s 1 ((String.length s) - 2)) }
   | "{" { LCURLY }
   | "}" { RCURLY }
   | "[" { LBRACKET }
   | "]" { RBRACKET }
+  | "metadata" { METADATA }
+  | "author" { AUTHOR }
+  | "date" { DATE }
+  | "title" { TITLE }
   | "settings" { SETTINGS }
   | "pagestyle" { PAGESTYLE }
   | "letter" { LETTER }
