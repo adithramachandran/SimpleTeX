@@ -10,6 +10,8 @@ exception SyntaxError
 
 type param = string
 type content = string
+type number = string
+type boolean = string
 
 type metadata =
   | Author of content
@@ -20,6 +22,7 @@ type metadata =
 type pagestyle = 
   | Letter
   | A4
+  | Legal
 
 type pageorient =
   | Portrait
@@ -27,8 +30,7 @@ type pageorient =
 
 type fontstyle =
   | Times
-  | Arial
-  | Cambria
+  | Default
 
 type linespacing =
   | Single
@@ -46,16 +48,16 @@ type setting =
  
 type text =
   | NormalText of content
-  | TextList of text * text
+  | TextList of content * text
 
-type bop =
+(* type bop =
   | Plus
   | Minus
   | Times
-  | Divide
+  | Div
   | Eq
-  | Less
-  | Greater
+  | Lt
+  | Gt
   | Leq
   | Geq
   | And
@@ -63,25 +65,58 @@ type bop =
 
 type unop =
   | Fact
-  | Not
+  | Not *)
 
-type aexp =
-  | Int of int
-  | Bool of bool
+type infer =
+  | Axiom of mapping * content
+  | Rule of infer list * mapping * content
+
+and mapping =
+  | StoreMapping of delimiter * block * block * delimiter * maptype * delimiter * block * block * delimiter
+  | Hoare of content * mapping * content
+
+and delimiter =
+  | Langle
+  | Rangle
+
+and maptype =
+  | SmallStep
+  | BigStep
+  | MultiStep
+  | NotSmallStep
+  | NotBigStep
+  | NotMultiStep
+
+and specialchar =
+  | Sigma
+  | Lambda
+
+and block =
+  | SpecialChar of specialchar
+  | Str of content
+
+(* type aexp =
+  | Int of number
+  | Bool of boolean
   | Var of content
   | Binop of bop * aexp * aexp
   | Unop of unop * aexp
   | Frac of aexp * aexp
 
-type equation =
+type simpleequation =
   | Arith of aexp
-  | Separator of bop
   | Mapping of content * content
-  | Inference of (equation list) * equation
-  | Deriv of equation * aexp
-  | Integ of equation * equation * equation * aexp
-  | Summation of equation * equation * equation
-  | Quality of bop * equation * equation
+  | Deriv of simpleequation * content
+  | Integ of number * number * simpleequation * content
+  | Sum of bound * bound option * simpleequation
+  | Quality of bop * simpleequation * simpleequation *)
+
+type simpleequation = 
+  | Infer of infer
+
+type equation =
+  | Equation of simpleequation
+  | EquationList of simpleequation * equation
 
 type table =
   | Row of text list
@@ -91,7 +126,7 @@ type environment =
   | Metadata of metadata
   | Settings of setting
   | Text of text
-  | Equation of equation
+  | EquationEnv of equation
   | Table of table
   | ListEnv of environment * environment
   | Nil

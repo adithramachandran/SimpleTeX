@@ -49,6 +49,17 @@ rule read =
   | "}" { RCURLY }
   | "[" { LBRACKET }
   | "]" { RBRACKET }
+  | "," { COMMA }
+  | "<<" { LANGLE }
+  | ">>" { RANGLE }
+  | "_sig" { SIGMA }
+  | "_lam" { LAMBDA }
+  | "->" { SMALL }
+  | "=>" { BIG }
+  | "->*" { MULTI }
+  | "-/>" { NOTSMALL }
+  | "=/>" { NOTBIG }
+  | "-/>*" { NOTMULTI }
   | "metadata" { METADATA }
   | "author" { AUTHOR }
   | "date" { DATE }
@@ -57,13 +68,13 @@ rule read =
   | "pagestyle" { PAGESTYLE }
   | "letter" { LETTER }
   | "A4" { A4 }
+  | "legal" { LEGAL }
   | "pageorient" { PAGEORIENT }
   | "portrait" { PORTRAIT }
   | "landscape" { LANDSCAPE }
   | "fontstyle" { FONTSTYLE }
   | "times" { TIMES } 
-  | "arial" { ARIAL }
-  | "cambria" { CAMBRIA }
+  | "default" { DEFAULT }
   | "fontsize" { FONTSIZE }
   | "linespacing" { SPACING }
   | "single" { SINGLE }
@@ -71,6 +82,7 @@ rule read =
   | "double" { DOUBLE }
   | "marginsize" { MARGINSIZE }
   | "text" { TEXT }
+  | "infer" { INFERENCE }
   | "equation" { EQUATION }
   | "table" { TABLE }
   | ";" { SEMI }
