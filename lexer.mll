@@ -52,6 +52,8 @@ rule read =
   | "," { COMMA }
   | "<<" { LANGLE }
   | ">>" { RANGLE }
+  | "_sig''" { SIGMAPRIME }
+  | "_sig'" { SIGMAPRIME }
   | "_sig" { SIGMA }
   | "_lam" { LAMBDA }
   | "->" { SMALL }

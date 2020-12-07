@@ -43,6 +43,8 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token LANGLE
 %token RANGLE
 %token SIGMA
+%token SIGMAPRIME
+%token SIGMADOUBLEPRIME
 %token LAMBDA
 %token SMALL
 %token BIG
@@ -135,13 +137,20 @@ infer_list:
     ;
 
 infer:
+    | LCURLY; c = CONTENT; RCURLY { Str (c) }
+    | LCURLY; m = mapping; RCURLY { Mapping (m) }
     | LCURLY; m = mapping; RCURLY; LCURLY; t = CONTENT; RCURLY { Axiom (m,t) }
     | LCURLY; il = infer_list; RCURLY; LCURLY; m = mapping; RCURLY; LCURLY; t = CONTENT; RCURLY { Rule (il, m, t) }
     ;
 
 mapping:
-    | d1 = delimiter; b1 = block; COMMA; b2 = block; d2 = delimiter; mt = maptype; d3 = delimiter; b3 = block; COMMA; b4 = block; d4 = delimiter { StoreMapping (d1,b1,b2,d2,mt,d3,b3,b4,d4) }
+    | mh1 = mapping_half; mt = maptype; mh2 = mapping_half { StoreMapping (mh1,mt,mh2) }
     | p = CONTENT; m = mapping; q = CONTENT { Hoare (p,m,q) }
+    ;
+
+mapping_half:
+    | d1 = delimiter; b1 = block; COMMA; b2 = block; d2 = delimiter { Pair (d1,b1,b2,d2) }
+    | p = CONTENT { MapStr (p) }
     ;
 
 delimiter:
@@ -151,11 +160,13 @@ delimiter:
 
 block:
     | s = specialchar { SpecialChar (s) }
-    | c = CONTENT { Str (c) }
+    | c = CONTENT { BlockStr (c) }
     ;
 
 specialchar:
     | SIGMA { Sigma }
+    | SIGMAPRIME { SigmaPrime }
+    | SIGMADOUBLEPRIME { SigmaDoublePrime }
     | LAMBDA { Lambda }
     ;
 
