@@ -15,12 +15,16 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token COMMA
 %token LBRACKET
 %token RBRACKET
+%token LPAREN
+%token RPAREN
 %token SETTINGS
 %token TEXT
 %token EQUATION
 %token TABLE
 %token METADATA
+%token MATH
 %token INFERENCE
+%token LAMBDA
 %token PAGESTYLE
 %token PAGEORIENT
 %token MARGINSIZE
@@ -45,13 +49,21 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token SIGMA
 %token SIGMAPRIME
 %token SIGMADOUBLEPRIME
-%token LAMBDA
+%token LAM
+%token TAU
+%token TAUPRIME
+%token TAUZERO
+%token TAUONE
+%token TAUTWO
 %token SMALL
 %token BIG
 %token MULTI
 %token NOTSMALL
 %token NOTBIG
 %token NOTMULTI
+%token PLUS
+%token MULT
+%token PERIOD
 
 %start <Ast.environment> prog
 
@@ -129,6 +141,16 @@ equation_list:
 
 equation:
     | INFERENCE; COLON; i = infer { Infer (i) }
+    | LAMBDA; COLON; LCURLY; l = lambda; RCURLY { Lambda (l) }
+    | MATH; COLON; LCURLY; m = split; RCURLY { MathEquation (m) }
+    ;
+
+split:
+    | m = math_eq { MathEq (m) }
+    ;
+
+math_eq:
+    | { Int ("5") }
     ;
 
 infer_list:
@@ -140,6 +162,7 @@ infer:
     | LCURLY; c = CONTENT; RCURLY { Str (c) }
     | LCURLY; m = mapping; RCURLY { Mapping (m) }
     | LCURLY; m = mapping; RCURLY; LCURLY; t = CONTENT; RCURLY { Axiom (m,t) }
+    | LCURLY; l = lambda; RCURLY { LambdaRule (l) }
     | LCURLY; il = infer_list; RCURLY; LCURLY; m = mapping; RCURLY; LCURLY; t = CONTENT; RCURLY { Rule (il, m, t) }
     ;
 
@@ -161,13 +184,14 @@ delimiter:
 block:
     | s = specialchar { SpecialChar (s) }
     | c = CONTENT { BlockStr (c) }
+    | c = CONTENT; COLON; t = var_type { TypedBlock (c,t) }
     ;
 
 specialchar:
     | SIGMA { Sigma }
     | SIGMAPRIME { SigmaPrime }
     | SIGMADOUBLEPRIME { SigmaDoublePrime }
-    | LAMBDA { Lambda }
+    | LAM { Lambda }
     ;
 
 maptype:
@@ -177,6 +201,22 @@ maptype:
     | NOTSMALL { NotSmallStep }
     | NOTBIG { NotBigStep }
     | NOTMULTI { NotMultiStep }
+    ;
+
+var_type:
+    | c = CONTENT { StrType (c) }
+    | TAU { Tau }
+    | TAUPRIME { TauPrime }
+    | TAUZERO { TauZero }
+    | TAUONE { TauOne }
+    | TAUTWO { TauTwo }
+    | LPAREN; vt1 = var_type; RPAREN; PLUS; LPAREN; vt2 = var_type; RPAREN { FuncType (vt1,Sum,vt2) }
+    | LPAREN; vt1 = var_type; RPAREN; MULT; LPAREN; vt2 = var_type; RPAREN { FuncType (vt1,Product,vt2) }
+    | LPAREN; vt1 = var_type; RPAREN; SMALL; LPAREN; vt2 = var_type; RPAREN { FuncType (vt1,Func,vt2) }
+    ;
+
+lambda:
+    | l = specialchar; b1 = block; PERIOD; b2 = block { LambdaType (l,b1,b2) }
     ;
 
 table:

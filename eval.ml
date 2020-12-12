@@ -80,14 +80,14 @@ and make_settings (ast:Ast.environment) (header:string list) : Ast.environment o
       string list, in order to force fontsize being the first defined setting. *)
   let rec extract_fontsize (s:Ast.setting) (l:string list) : string list =
     match s with
-    | FontSize(s) -> [String.concat "" ["\\documentclass["; s;"]{extarticle}"]; "\\usepackage{geometry, mathpartir, setspace, amssymb}"]
+    | FontSize(s) -> [String.concat "" ["\\documentclass["; s;"]{extarticle}"]; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath}"]
     | ListSetting(FontSize(f), s) -> (extract_fontsize (FontSize(f)) []) @ (extract_settings s [])
-    | _ -> ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb}"] @ (extract_settings s []) in
+    | _ -> ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath}"] @ (extract_settings s []) in
 
   match ast with
   | Settings (s) -> (None, extract_fontsize s [])
   | ListEnv(Settings (s), a) -> (Some(a), extract_fontsize s [])
-  | _ -> (Some(ast), ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb}"])
+  | _ -> (Some(ast), ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath}"])
 
 (** [eval_text t] evaluates the Ast.text environment [t] and outputs the corresponding string list *)
 and eval_text (t:Ast.text) : string list =
@@ -97,28 +97,64 @@ and eval_text (t:Ast.text) : string list =
 
 (** [eval_equation e out] evaluates the Ast.equation [e] and outputs the corresponding string list *)
 and eval_equation (e:Ast.equation) (out:string list) : string list =
+  
   (** [eval_simple_equation se out] evaluates Ast.simpleequation [se] to a string list
       appends it to [out] and returns the result of this append*)
   let rec eval_simple_equation (se:Ast.simpleequation) (out:string list) : string list =
-    (** [eval_infer i] evaluates inference rule [i] to a string*)
-    let rec eval_infer (i:Ast.infer) : string =
-      (** [eval_mapping m] evaluates Ast.mapping [m] to a string *)
-      let rec eval_mapping (m:Ast.mapping) : string =
-        (** [eval_delim d] evaluates Ast.delimiter [d] to a string *)
+  
+    (** [eval_special_character sc] evaluates [sc] to its corersponding string in LaTeX *)
+    let eval_special_character (sc:Ast.specialchar) =
+      match sc with
+      | Sigma -> "\\sigma"
+      | Lambda -> "\\lambda"
+      | SigmaPrime -> "\\sigma'"
+      | SigmaDoublePrime -> "\\sigma''" in
+
+    (** [eval_delim d] evaluates Ast.delimiter [d] to a string *)
         let eval_delim (d:Ast.delimiter) : string =
           match d with
           | Langle -> "\\langle"
-          | Rangle -> "\\rangle" in
-        (** [eval_block b] evaluates Ast.block [b] to a string *)
+          | Rangle -> "\\rangle"
+          | Sum -> "+"
+          | Product -> "\\times"
+          | Func -> "\\rightarrow" in
+
+    (** [eval_block b] evaluates Ast.block [b] to a string *)
         let eval_block (b:Ast.block) : string =
+  
+          (** [eval_var_type vt] evaluates Ast.var_type [vt] to the corresponding string in LaTeX *)
+          let rec eval_var_type (vt:Ast.var_type) : string = 
+            match vt with
+            | StrType (c) -> String.concat "" ["\\textbf{"; c; "}"]
+            | Tau -> "\\tau"
+            | TauPrime -> "\\tau'"
+            | TauZero -> "\\tau_0"
+            | TauOne -> "\\tau_1"
+            | TauTwo -> "\\tau_2"
+            | FuncType (vt1, d, vt2) -> String.concat "" ["("; eval_var_type vt1; eval_delim d; eval_var_type vt2; ")"] in
+
           match b with
-          | SpecialChar (s) ->
-            begin match s with
-                  | Sigma -> "\\sigma"
-                  | Lambda -> "\\lambda"
-                  | SigmaPrime -> "\\sigma'"
-                  | SigmaDoublePrime -> "\\sigma''" end
-          | BlockStr (c) -> c in
+          | SpecialChar (s) -> eval_special_character s
+          | BlockStr (c) -> c
+          | TypedBlock (c, vt) ->
+            let var_t = eval_var_type vt in
+            String.concat "" [c; ":"; var_t] in
+  
+    (** [eval_lambda l] evaluates the Ast.lambda [l] to its corresponding string in LaTeX *)
+      let eval_lambda (l:Ast.lambda) =
+        match l with
+        | LambdaType (sc, b1, b2) ->
+          let spec = eval_special_character sc in
+          let block1 = eval_block b1 in
+          let block2 = eval_block b2 in
+          String.concat "" [spec; " "; block1; "."; block2] in
+
+    (** [eval_infer i] evaluates inference rule [i] to a string*)
+    let rec eval_infer (i:Ast.infer) : string =
+  
+      (** [eval_mapping m] evaluates Ast.mapping [m] to a string *)
+      let rec eval_mapping (m:Ast.mapping) : string =
+
         (** [eval_maptype mt] evaluates Ast.maptype [mt] to a string *)
         let eval_maptype (mt:Ast.maptype) : string =
           match mt with
@@ -128,6 +164,7 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
           | NotSmallStep -> "\\nrightarrow"
           | NotBigStep -> "\\not\\Downarrow"
           | NotMultiStep -> "\\nrightarrow^*" in
+  
         (** [eval_mapping_half mh] evaluates Ast.mapping_half [mh] to a string*)
         let eval_mapping_half (mh:Ast.mapping_half) : string =
           match mh with
@@ -138,6 +175,7 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
         | StoreMapping (mh1, mt, mh2) ->
           String.concat "" [(eval_mapping_half mh1); (eval_maptype mt); " "; (eval_mapping_half mh2)]
         | Hoare (c1, m, c2) -> String.concat "" [String.concat "" ["\\{"; c1; "\\}"]; (eval_mapping m); String.concat "" ["\\{"; c2; "\\}"]] in
+  
       (** [eval_infer_list il l] evaluates Ast.infer list [il] to a list of evaluated inference rules *)
       let rec eval_infer_list (il:Ast.infer list) (l:string list) : string =
         match il with
@@ -152,6 +190,9 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
       | Axiom (m, c) ->
         let mapping = eval_mapping m in
         String.concat "" ["\\inferrule*[Right="; c; "]"; "{\\hspace{1mm}}{"; mapping; "}"]
+      | LambdaRule (l) ->
+        let lam = eval_lambda l in
+        lam
       | Rule (il, m, c) ->
         let premises = eval_infer_list il [] in
         let mapping = eval_mapping m in
@@ -160,7 +201,11 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
     match se with
     | Infer (i) -> 
       let infer = eval_infer i in
-      out @ ["\\begin{mathpar}"] @ [infer] @ ["\\end{mathpar}"] in
+      out @ ["\\begin{mathpar}"] @ [infer] @ ["\\end{mathpar}"]
+    | Lambda (l) -> 
+      let lam = eval_lambda l in
+      out @ ["\\begin{equation*}"] @ [lam] @ ["\\end{equation*}"]
+    | _ -> failwith "Unimplemented" in
 
   match e with
   | Equation (se) -> out @ (eval_simple_equation se [])

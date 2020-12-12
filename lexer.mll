@@ -49,19 +49,29 @@ rule read =
   | "}" { RCURLY }
   | "[" { LBRACKET }
   | "]" { RBRACKET }
+  | "(" { LPAREN }
+  | ")" { RPAREN }
   | "," { COMMA }
+  | "." { PERIOD }
   | "<<" { LANGLE }
   | ">>" { RANGLE }
   | "_sig''" { SIGMAPRIME }
   | "_sig'" { SIGMAPRIME }
   | "_sig" { SIGMA }
-  | "_lam" { LAMBDA }
+  | "_lam" { LAM }
+  | "_tau" { TAU }
+  | "_tau'" { TAUPRIME }
+  | "_tau0" { TAUZERO }
+  | "_tau1" { TAUONE }
+  | "_tau2" { TAUTWO }
   | "->" { SMALL }
   | "=>" { BIG }
   | "->*" { MULTI }
   | "-/>" { NOTSMALL }
   | "=/>" { NOTBIG }
   | "-/>*" { NOTMULTI }
+  | "+" { PLUS }
+  | "*" { MULT }
   | "metadata" { METADATA }
   | "author" { AUTHOR }
   | "date" { DATE }
@@ -85,6 +95,8 @@ rule read =
   | "marginsize" { MARGINSIZE }
   | "text" { TEXT }
   | "infer" { INFERENCE }
+  | "lambda" { LAMBDA }
+  | "math" { MATH }
   | "equation" { EQUATION }
   | "table" { TABLE }
   | ";" { SEMI }

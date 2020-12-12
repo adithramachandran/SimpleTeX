@@ -2,6 +2,10 @@
     This file describes the AST for a SimpleTeX file
 *)
 
+(** TODO: Add lambda calculus *)
+(** TODO: Add STLC *)
+(** TODO: Add System-F *)
+
 (* Parsing information: ((l1,c1),(l2,c2)) represents a symbol
    appearing at line l1 character c1 to line l2 character c2. *)
 type info = (int * int) * (int * int)
@@ -61,6 +65,7 @@ type infer =
   | Str of content
   | Mapping of mapping
   | Axiom of mapping * content
+  | LambdaRule of lambda
   | Rule of infer list * mapping * content
 
 (** Type [mapping] represents the different kinds of mappings *)
@@ -78,6 +83,9 @@ and mapping_half=
 and delimiter =
   | Langle
   | Rangle
+  | Sum
+  | Product
+  | Func
 
 (** Type [maptype] represents the different kinds of relations,
     including small step, big step, and multistep *)
@@ -101,14 +109,32 @@ and specialchar =
 and block =
   | SpecialChar of specialchar
   | BlockStr of content
+  | TypedBlock of content * var_type
+
+and var_type =
+  | StrType of content
+  | Tau
+  | TauPrime
+  | TauZero
+  | TauOne
+  | TauTwo
+  | FuncType of var_type * delimiter * var_type
+
+and lambda =
+  | LambdaType of specialchar * block * block
+
+(** Type [split] a list . *)
+type split =
+  | MathEq of math_eq
+  | MathEqList of math_eq * split
 
 (** Type [math_eq] represents the different kinds of mathematical equations
     available. *)
-type math_eq = 
+and math_eq = 
   | Int of content
   | Var of content
-  | Fact of math_eq * unop
-  | Not of unop * math_eq
+  | FactEq of math_eq * unop
+  | NotEq of unop * math_eq
   | Binop of math_eq * binop * math_eq
   | Relation of math_eq * relation * math_eq
   | Sum of math_eq * math_eq * math_eq
@@ -155,7 +181,8 @@ and relation =
 (** Type [simpleequation] represents a simple equation, which is a building block of a list of equations *)
 type simpleequation = 
   | Infer of infer
-  | MathEquation of math_eq
+  | Lambda of lambda
+  | MathEquation of split
 
 (** Type [equation] represents either a simple equation or a simple equation prepended onto a list of equations *)
 type equation =
