@@ -216,7 +216,12 @@ var_type:
     ;
 
 lambda:
-    | l = specialchar; b1 = block; PERIOD; b2 = block { LambdaType (l,b1,b2) }
+    | l = lambda_args; PERIOD; b = block { LambdaType (l,b) }
+    ;
+
+lambda_args:
+    | sc = specialchar; b = block { LambdaArgs (sc,b,None) }
+    | sc = specialchar; b = block; la = lambda_args { LambdaArgs (sc,b,Some(la)) }
     ;
 
 table:

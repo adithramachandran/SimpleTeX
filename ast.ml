@@ -66,7 +66,21 @@ type infer =
   | Mapping of mapping
   | Axiom of mapping * content
   | LambdaRule of lambda
+  (* | SystemFRule of sysf_rule *)
   | Rule of infer list * mapping * content
+
+and stlc_rule = 
+  | STLCLambda of context option * lambda
+  | STLCAxiom of context option * lambda * content
+  | STLCTree of stlc_rule list * context option * lambda * content
+
+and context =
+  | Gamma
+  | EmptyContext
+  | GammaUnion of block list
+(* 
+and sysf_rule =
+  | SystemFLambda of type_context option * context option * lambda *)
 
 (** Type [mapping] represents the different kinds of mappings *)
 and mapping =
@@ -121,7 +135,10 @@ and var_type =
   | FuncType of var_type * delimiter * var_type
 
 and lambda =
-  | LambdaType of specialchar * block * block
+  | LambdaType of lambda_args * block
+
+and lambda_args = 
+  | LambdaArgs of specialchar * block * lambda_args option
 
 (** Type [split] a list . *)
 type split =

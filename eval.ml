@@ -142,12 +142,22 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
   
     (** [eval_lambda l] evaluates the Ast.lambda [l] to its corresponding string in LaTeX *)
       let eval_lambda (l:Ast.lambda) =
+
+        let rec eval_lambda_args (la:Ast.lambda_args) =
+          match la with
+          | LambdaArgs (sc, b, lao) ->
+            let spec = eval_special_character sc in
+            let block = eval_block b in
+            let laopt = begin match lao with
+                        | Some(a) -> eval_lambda_args a
+                        | None -> "" end in
+            String.concat "" [spec; " "; block; ".\\ "; laopt] in
+
         match l with
-        | LambdaType (sc, b1, b2) ->
-          let spec = eval_special_character sc in
-          let block1 = eval_block b1 in
-          let block2 = eval_block b2 in
-          String.concat "" [spec; " "; block1; "."; block2] in
+        | LambdaType (la, b) ->
+          let args = eval_lambda_args la in
+          let block = eval_block b in
+          String.concat "" [args; " "; block] in
 
     (** [eval_infer i] evaluates inference rule [i] to a string*)
     let rec eval_infer (i:Ast.infer) : string =
