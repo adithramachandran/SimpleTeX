@@ -9,7 +9,7 @@ let () =
   let lexbuf = Lexing.from_channel (open_in filename) in
   let c =
     try Parser.prog Lexer.read lexbuf
-    with Parsing.Parse_error ->
+    with _ ->
       Printf.printf "Syntax error at line %d character %d\n"
         !Lexer.lineno
         (Lexing.lexeme_end lexbuf - !Lexer.linestart - 1);

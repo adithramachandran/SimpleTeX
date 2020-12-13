@@ -33,7 +33,7 @@ let error lexbuf msg =
   raise (LexingError err)
 }
 
-let white = [' ' '\t' '\n']+
+let white = [' ' '\t']+
 let digit = ['0'-'9']
 let int = '-'? digit+
 let lletter = ['a'-'z']
@@ -44,6 +44,8 @@ let string = '"' (word | digit | white | symbol)+ '"'
 
 rule read = 
   parse
+  | white { read lexbuf }
+  | '\n' { newline lexbuf; read lexbuf }
   | string { let s = Lexing.lexeme lexbuf in CONTENT (String.sub s 1 ((String.length s) - 2)) }
   | "{" { LCURLY }
   | "}" { RCURLY }
@@ -107,5 +109,8 @@ rule read =
   | "table" { TABLE }
   | ";" { SEMI }
   | ":" { COLON }
-  | white { read lexbuf }
   | eof { EOF }
+  | _ as c {
+            printf "Error at line %d\n" !lineno;
+            printf "Unrecognized character: [%c]\n" c;
+            exit 1 }
