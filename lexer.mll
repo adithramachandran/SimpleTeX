@@ -59,11 +59,15 @@ rule read =
   | "_sig'" { SIGMAPRIME }
   | "_sig" { SIGMA }
   | "_lam" { LAM }
+  | "_Lam" { BIGLAM }
   | "_tau" { TAU }
   | "_tau'" { TAUPRIME }
   | "_tau0" { TAUZERO }
   | "_tau1" { TAUONE }
   | "_tau2" { TAUTWO }
+  | "_Gamma" { GAMMA }
+  | "_Delta" { DELTA }
+  | "_forall" { FORALL }
   | "->" { SMALL }
   | "=>" { BIG }
   | "->*" { MULTI }
@@ -94,6 +98,8 @@ rule read =
   | "double" { DOUBLE }
   | "marginsize" { MARGINSIZE }
   | "text" { TEXT }
+  | "stlc" { STLC }
+  | "sysf" { SYSF }
   | "infer" { INFERENCE }
   | "lambda" { LAMBDA }
   | "math" { MATH }

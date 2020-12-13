@@ -65,22 +65,43 @@ type infer =
   | Str of content
   | Mapping of mapping
   | Axiom of mapping * content
-  | LambdaRule of lambda
-  (* | SystemFRule of sysf_rule *)
   | Rule of infer list * mapping * content
 
 and stlc_rule = 
-  | STLCLambda of context option * lambda
-  | STLCAxiom of context option * lambda * content
-  | STLCTree of stlc_rule list * context option * lambda * content
+  | STLCLambda of context * stlc_rule_block
+  | STLCAxiom of context * stlc_rule_block * content
+  | STLCTree of stlc_premise list * context * stlc_rule_block * content
+
+and stlc_rule_block =
+  | STLCRuleBlock of block
+  | STLCRuleLambda of lambda
+
+and stlc_premise =
+  | STLCPremise of context * block
+  | StrSTLCPremise of content
 
 and context =
   | Gamma
   | EmptyContext
-  | GammaUnion of block list
-(* 
+  | GammaList of block list
+
 and sysf_rule =
-  | SystemFLambda of type_context option * context option * lambda *)
+  | SystemFLambda of type_context * context * sysf_rule_block
+  | SystemFAxiom of type_context * context * sysf_rule_block * content
+  | SystemFTree of sysf_premise list * type_context * context * sysf_rule_block * content
+
+and sysf_rule_block =
+  | SystemFRuleBlock of block
+  | SystemFRuleLambda of lambda
+
+and sysf_premise =
+  | SystemFPremise of type_context * context * block
+  | StrSystemFPremise of content
+
+and type_context =
+  | Delta
+  | EmptyTypeContext
+  | DeltaUnion of block list
 
 (** Type [mapping] represents the different kinds of mappings *)
 and mapping =
@@ -117,6 +138,7 @@ and specialchar =
   | Lambda
   | SigmaPrime
   | SigmaDoublePrime
+  | BigLambda
 
 (** Type [block] represents either a spacial character or a string.
     Two blocks make up a pair, enclosed with delimiters *)
@@ -132,6 +154,7 @@ and var_type =
   | TauZero
   | TauOne
   | TauTwo
+  | Universal of content * var_type
   | FuncType of var_type * delimiter * var_type
 
 and lambda =
@@ -198,6 +221,8 @@ and relation =
 (** Type [simpleequation] represents a simple equation, which is a building block of a list of equations *)
 type simpleequation = 
   | Infer of infer
+  | STLCRule of stlc_rule
+  | SystemFRule of sysf_rule
   | Lambda of lambda
   | MathEquation of split
 

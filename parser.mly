@@ -24,6 +24,8 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token METADATA
 %token MATH
 %token INFERENCE
+%token STLC
+%token SYSF
 %token LAMBDA
 %token PAGESTYLE
 %token PAGEORIENT
@@ -50,11 +52,15 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token SIGMAPRIME
 %token SIGMADOUBLEPRIME
 %token LAM
+%token BIGLAM
 %token TAU
 %token TAUPRIME
 %token TAUZERO
 %token TAUONE
 %token TAUTWO
+%token GAMMA
+%token DELTA
+%token FORALL
 %token SMALL
 %token BIG
 %token MULTI
@@ -142,6 +148,8 @@ equation_list:
 equation:
     | INFERENCE; COLON; i = infer { Infer (i) }
     | LAMBDA; COLON; LCURLY; l = lambda; RCURLY { Lambda (l) }
+    | STLC; COLON; s = stlc_rule { STLCRule (s) }
+    | SYSF; COLON; s = sysf_rule { SystemFRule (s) }
     | MATH; COLON; LCURLY; m = split; RCURLY { MathEquation (m) }
     ;
 
@@ -162,8 +170,66 @@ infer:
     | LCURLY; c = CONTENT; RCURLY { Str (c) }
     | LCURLY; m = mapping; RCURLY { Mapping (m) }
     | LCURLY; m = mapping; RCURLY; LCURLY; t = CONTENT; RCURLY { Axiom (m,t) }
-    | LCURLY; l = lambda; RCURLY { LambdaRule (l) }
     | LCURLY; il = infer_list; RCURLY; LCURLY; m = mapping; RCURLY; LCURLY; t = CONTENT; RCURLY { Rule (il, m, t) }
+    ;
+
+stlc_rule:
+    | LCURLY; c = context; COMMA; srb = stlc_rule_block; RCURLY { STLCLambda (c,srb) }
+    | LCURLY; c = context; COMMA; srb = stlc_rule_block; RCURLY; LCURLY; name = CONTENT; RCURLY { STLCAxiom (c,srb,name) }
+    | LCURLY; stlc_l = stlc_premise_list; RCURLY; LCURLY; c = context; COMMA; srb = stlc_rule_block; RCURLY; LCURLY; name = CONTENT; RCURLY { STLCTree (stlc_l,c,srb,name) }
+    ;
+
+stlc_premise_list:
+    | s = stlc_premise { [s] }
+    | s = stlc_premise; COMMA; sl = stlc_premise_list { s :: sl }
+    ;
+
+stlc_premise:
+    | c = CONTENT { StrSTLCPremise (c) }
+    | c = context; b = block { STLCPremise (c,b) }
+    ;
+
+stlc_rule_block:
+    | b = block { STLCRuleBlock (b) }
+    | l = lambda { STLCRuleLambda (l) }
+    ;
+
+sysf_rule:
+    | LCURLY; tc = type_context; COMMA; c = context; COMMA; srb = sysf_rule_block; RCURLY { SystemFLambda (tc,c,srb) }
+    | LCURLY; tc = type_context; COMMA; c = context; COMMA; srb = sysf_rule_block; RCURLY; LCURLY; name = CONTENT; RCURLY { SystemFAxiom (tc,c,srb,name) }
+    | LCURLY; sysf_l = sysf_premise_list; RCURLY; LCURLY; tc = type_context; COMMA; c = context; COMMA; srb = sysf_rule_block; RCURLY; LCURLY; name = CONTENT; RCURLY { SystemFTree (sysf_l,tc,c,srb,name) }
+    ;
+
+sysf_rule_block:
+    | b = block { SystemFRuleBlock (b) }
+    | l = lambda { SystemFRuleLambda (l) }
+    ;
+
+sysf_premise_list:
+    | s = sysf_premise { [s] }
+    | s = sysf_premise; COMMA; sl = sysf_premise_list { s :: sl }
+    ;
+
+sysf_premise:
+    | c = CONTENT { StrSystemFPremise (c) }
+    | tc = type_context; c = context; b = block { SystemFPremise (tc,c,b) }
+    ;
+
+context:
+    | LPAREN; RPAREN { EmptyContext }
+    | LPAREN; GAMMA; RPAREN { Gamma }
+    | LPAREN; GAMMA; COMMA; bl = block_list; RPAREN { GammaList (bl) }
+    ;
+
+type_context:
+    | LPAREN; RPAREN; { EmptyTypeContext }
+    | LPAREN; DELTA; RPAREN; { Delta }
+    | LPAREN; DELTA; COMMA; bl = block_list; RPAREN { DeltaUnion (bl) }
+    ;
+
+block_list:
+    | b = block { [b] }
+    | b = block; COMMA; bl = block_list { b :: bl }
     ;
 
 mapping:
@@ -192,6 +258,7 @@ specialchar:
     | SIGMAPRIME { SigmaPrime }
     | SIGMADOUBLEPRIME { SigmaDoublePrime }
     | LAM { Lambda }
+    | BIGLAM { BigLambda }
     ;
 
 maptype:
@@ -210,6 +277,7 @@ var_type:
     | TAUZERO { TauZero }
     | TAUONE { TauOne }
     | TAUTWO { TauTwo }
+    | FORALL; c = CONTENT; PERIOD; vt = var_type { Universal (c,vt) }
     | LPAREN; vt1 = var_type; RPAREN; PLUS; LPAREN; vt2 = var_type; RPAREN { FuncType (vt1,Sum,vt2) }
     | LPAREN; vt1 = var_type; RPAREN; MULT; LPAREN; vt2 = var_type; RPAREN { FuncType (vt1,Product,vt2) }
     | LPAREN; vt1 = var_type; RPAREN; SMALL; LPAREN; vt2 = var_type; RPAREN { FuncType (vt1,Func,vt2) }

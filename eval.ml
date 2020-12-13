@@ -80,14 +80,14 @@ and make_settings (ast:Ast.environment) (header:string list) : Ast.environment o
       string list, in order to force fontsize being the first defined setting. *)
   let rec extract_fontsize (s:Ast.setting) (l:string list) : string list =
     match s with
-    | FontSize(s) -> [String.concat "" ["\\documentclass["; s;"]{extarticle}"]; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath}"]
+    | FontSize(s) -> [String.concat "" ["\\documentclass["; s;"]{extarticle}"]; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath, bm}"]
     | ListSetting(FontSize(f), s) -> (extract_fontsize (FontSize(f)) []) @ (extract_settings s [])
-    | _ -> ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath}"] @ (extract_settings s []) in
+    | _ -> ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath, bm}"] @ (extract_settings s []) in
 
   match ast with
   | Settings (s) -> (None, extract_fontsize s [])
   | ListEnv(Settings (s), a) -> (Some(a), extract_fontsize s [])
-  | _ -> (Some(ast), ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath}"])
+  | _ -> (Some(ast), ["\\documentclass[12pt]{article}"; "\\usepackage{geometry, mathpartir, setspace, amssymb, amsmath, bm}"])
 
 (** [eval_text t] evaluates the Ast.text environment [t] and outputs the corresponding string list *)
 and eval_text (t:Ast.text) : string list =
@@ -107,41 +107,43 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
       match sc with
       | Sigma -> "\\sigma"
       | Lambda -> "\\lambda"
+      | BigLambda -> "\\Lambda"
       | SigmaPrime -> "\\sigma'"
       | SigmaDoublePrime -> "\\sigma''" in
 
     (** [eval_delim d] evaluates Ast.delimiter [d] to a string *)
-        let eval_delim (d:Ast.delimiter) : string =
-          match d with
-          | Langle -> "\\langle"
-          | Rangle -> "\\rangle"
-          | Sum -> "+"
-          | Product -> "\\times"
-          | Func -> "\\rightarrow" in
+    let eval_delim (d:Ast.delimiter) : string =
+      match d with
+      | Langle -> "\\langle"
+      | Rangle -> "\\rangle"
+      | Sum -> "+"
+      | Product -> "\\times"
+      | Func -> "\\rightarrow" in
 
     (** [eval_block b] evaluates Ast.block [b] to a string *)
-        let eval_block (b:Ast.block) : string =
-  
-          (** [eval_var_type vt] evaluates Ast.var_type [vt] to the corresponding string in LaTeX *)
-          let rec eval_var_type (vt:Ast.var_type) : string = 
-            match vt with
-            | StrType (c) -> String.concat "" ["\\textbf{"; c; "}"]
-            | Tau -> "\\tau"
-            | TauPrime -> "\\tau'"
-            | TauZero -> "\\tau_0"
-            | TauOne -> "\\tau_1"
-            | TauTwo -> "\\tau_2"
-            | FuncType (vt1, d, vt2) -> String.concat "" ["("; eval_var_type vt1; eval_delim d; eval_var_type vt2; ")"] in
+    let eval_block (b:Ast.block) : string =
 
-          match b with
-          | SpecialChar (s) -> eval_special_character s
-          | BlockStr (c) -> c
-          | TypedBlock (c, vt) ->
-            let var_t = eval_var_type vt in
-            String.concat "" [c; ":"; var_t] in
+      (** [eval_var_type vt] evaluates Ast.var_type [vt] to the corresponding string in LaTeX *)
+      let rec eval_var_type (vt:Ast.var_type) : string = 
+        match vt with
+        | StrType (c) -> String.concat "" ["\\textbf{"; c; "}"]
+        | Tau -> "\\tau"
+        | TauPrime -> "\\tau'"
+        | TauZero -> "\\tau_0"
+        | TauOne -> "\\tau_1"
+        | TauTwo -> "\\tau_2"
+        | Universal (c, vt) -> String.concat "" ["\\forall "; c; "."; (eval_var_type vt)]
+        | FuncType (vt1, d, vt2) -> String.concat "" ["("; eval_var_type vt1; eval_delim d; eval_var_type vt2; ")"] in
+
+      match b with
+      | SpecialChar (s) -> eval_special_character s
+      | BlockStr (c) -> c
+      | TypedBlock (c, vt) ->
+        let var_t = eval_var_type vt in
+        String.concat "" [c; ":"; var_t] in
   
     (** [eval_lambda l] evaluates the Ast.lambda [l] to its corresponding string in LaTeX *)
-      let eval_lambda (l:Ast.lambda) =
+    let eval_lambda (l:Ast.lambda) : string =
 
         let rec eval_lambda_args (la:Ast.lambda_args) =
           match la with
@@ -159,6 +161,85 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
           let block = eval_block b in
           String.concat "" [args; " "; block] in
 
+    (** [eval_stlc s] evaluates the STLC rule [s] to its corresponding string in LaTeX *)
+    let rec eval_stlc (s:Ast.stlc_rule) : string =
+
+      (** [eval_stlc_premises pl l] evaluates each premise in the STLC premise list [pl] and
+          appends this result to [l], then concatenates all the strings in this list *)
+      let rec eval_stlc_premises (pl:Ast.stlc_premise list) (l:string list) : string =
+        match pl with
+        | [] -> String.concat "\\hspace{1.5cm}" l
+        | h :: t ->
+          let prem = begin match h with
+                           | STLCPremise (c, b) -> String.concat "" [eval_context c; "\\vdash "; eval_block b]
+                           | StrSTLCPremise (c) -> c end in
+          eval_stlc_premises t (l @ [prem]) in
+
+      (** [eval_stlc_rule_block srb] evaluates Ast.stlc_rule_block [srb] to the corresponding string in LaTeX *)
+      let eval_stlc_rule_block (srb:Ast.stlc_rule_block) : string =
+        match srb with
+        | STLCRuleBlock (b) -> eval_block b
+        | STLCRuleLambda (l) -> eval_lambda l in
+
+      match s with
+      | STLCLambda (c, srb) -> String.concat "" [eval_context c; "\\vdash "; eval_stlc_rule_block srb]
+      | STLCAxiom (c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{\\hspace{1mm}}{"; eval_stlc (STLCLambda (c, srb)); "}"]
+      | STLCTree (pl, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{"; eval_stlc_premises pl []; "}{"; eval_stlc (STLCLambda (c, srb)); "}"]
+
+    (** [eval_context c] evaluates the Ast.context [c] to its corresponding LaTeX string *)
+    and eval_context (c:Ast.context) : string =
+
+      (** [eval_block_list bl l] evaluates the list of blocks represented by bl *)
+      let rec eval_block_list (bl:Ast.block list) (l:string list) =
+          match bl with
+          | [] -> l
+          | h :: t -> eval_block_list t (l @ [eval_block h]) in
+
+      match c with
+      | EmptyContext -> "\\bm{\\cdot}"
+      | Gamma -> "\\Gamma"
+      | GammaList (bl) -> String.concat "," ("\\Gamma"::(eval_block_list bl [])) in
+
+    (** [eval_sysf s] evaluates the System-F rule [s] to its corresponding string in LaTeX *)
+    let rec eval_sysf (s:Ast.sysf_rule) : string =
+
+      (** [eval_sysf_premises pl l] evaluates each premise in the System-F premise list [pl] and
+          appends this result to [l], then concatenates all the strings in this list *)
+      let rec eval_sysf_premises (pl:Ast.sysf_premise list) (l:string list) : string =
+        match pl with
+        | [] -> String.concat "\\hspace{1.5cm}" l
+        | h :: t ->
+          let prem = begin match h with
+                           | SystemFPremise (tc, c, b) -> String.concat "" [eval_type_context tc; ","; eval_context c; "\\vdash "; eval_block b]
+                           | StrSystemFPremise (c) -> c end in
+          eval_sysf_premises t (l @ [prem]) in
+      
+      (** [eval_sysf_rule_block srb] evaluates Ast.sysf_rule_block [srb] to the corresponding string in LaTeX *)
+      let eval_sysf_rule_block (srb:Ast.sysf_rule_block) =
+        match srb with
+        | SystemFRuleBlock (b) -> eval_block b
+        | SystemFRuleLambda (l) -> eval_lambda l in
+
+      match s with
+      | SystemFLambda (tc, c, srb) -> String.concat "" [eval_type_context tc; ","; eval_context c; "\\vdash "; eval_sysf_rule_block srb]
+      | SystemFAxiom (tc, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{\\hspace{1mm}}{"; eval_sysf (SystemFLambda(tc, c, srb)); "}"]
+      | SystemFTree (pl, tc, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{"; eval_sysf_premises pl []; "}{"; eval_sysf (SystemFLambda(tc, c, srb)); "}"]
+
+    (** [eval_context tc] evaluates the Ast.type_context [tc] to its corresponding LaTeX string *)
+    and eval_type_context (tc:Ast.type_context) : string =
+
+      let rec eval_block_list_union (bl:Ast.block list) (l:string list) = 
+        match bl with
+        | [] ->
+          let flower_bracket_adder (s:string) = String.concat "" ["\\{"; s; "\\}"] in
+          List.map flower_bracket_adder l
+        | h :: t -> eval_block_list_union t (l @ [eval_block h]) in
+
+      match tc with
+      | EmptyTypeContext -> "\\bm{\\cdot}"
+      | Delta -> "\\Delta"
+      | DeltaUnion (bl) -> String.concat "\\cup " ("\\Delta" :: (eval_block_list_union bl [])) in
+    
     (** [eval_infer i] evaluates inference rule [i] to a string*)
     let rec eval_infer (i:Ast.infer) : string =
   
@@ -200,9 +281,6 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
       | Axiom (m, c) ->
         let mapping = eval_mapping m in
         String.concat "" ["\\inferrule*[Right="; c; "]"; "{\\hspace{1mm}}{"; mapping; "}"]
-      | LambdaRule (l) ->
-        let lam = eval_lambda l in
-        lam
       | Rule (il, m, c) ->
         let premises = eval_infer_list il [] in
         let mapping = eval_mapping m in
@@ -211,7 +289,13 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
     match se with
     | Infer (i) -> 
       let infer = eval_infer i in
-      out @ ["\\begin{mathpar}"] @ [infer] @ ["\\end{mathpar}"]
+      out @ ["\\begin{mathpar}"; infer; "\\end{mathpar}"]
+    | STLCRule (s) ->
+      let stlc = eval_stlc s in
+      out @ ["\\begin{mathpar}"; stlc; "\\end{mathpar}"]
+    | SystemFRule (s) ->
+      let sysf = eval_sysf s in
+      out @ ["\\begin{mathpar}"; sysf; "\\end{mathpar}"]
     | Lambda (l) -> 
       let lam = eval_lambda l in
       out @ ["\\begin{equation*}"] @ [lam] @ ["\\end{equation*}"]
