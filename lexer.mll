@@ -35,7 +35,7 @@ let error lexbuf msg =
 
 let white = [' ' '\t']+
 let digit = ['0'-'9']
-let int = '-'? digit+
+let int = '-'? digit+ ('.'? digit+)*
 let lletter = ['a'-'z']
 let uletter = ['A'-'Z']
 let word = (uletter | lletter) (uletter | lletter | digit | '_')*
@@ -84,7 +84,7 @@ rule read =
   | "-" { MINUS }
   | "/" { DIV }
   | "^" { EXP }
-  | "ncr" { NCR }
+  | "choose" { NCR }
   | "and" { AND }
   | "or" { OR }
   | "<" { LESSTHAN }
@@ -95,7 +95,7 @@ rule read =
   | "/>" { NOTGREATERTHAN }
   | ">=" { GREATEREQ }
   | "/>=" { NOTGREATEREQ }
-  | "el" { ELEMENTOF }
+  | "in" { ELEMENTOF }
   | "sub" { SUBSET }
   | "nsub" { NOTSUBSET }
   | "subeq" { SUBSETEQ }
@@ -105,6 +105,10 @@ rule read =
   | "!=" { NEQ }
   | "nsim" { NSIM }
   | "approx" { APPROX }
+  | "sum" { SUM }
+  | "integ" { INTEGRAL }
+  | "deriv" { DERIV }
+  | "parderiv" { PARDERIV }
   | "metadata" { METADATA }
   | "author" { AUTHOR }
   | "date" { DATE }

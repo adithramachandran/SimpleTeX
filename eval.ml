@@ -288,9 +288,63 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
 
     (** [eval_split s] evaluates the split environment [s] to its corresponding string in LaTeX. *)
     let rec eval_split (s:Ast.split) : string =
+      
+      (** [eval_math_eq me] evaluates the mathematical equation [me] to its corresponding string in LaTeX *)
+      let rec eval_math_eq (me:Ast.math_eq) : string =
+        
+        (** [eval_binop b] evaluates Ast.binop [b] to its corresponding LaTeX string representation *)
+        let eval_binop (b:Ast.binop) : string =
+          match b with
+          | Operation (o) ->
+            begin match o with
+                  | Plus -> "+"
+                  | Minus -> "-"
+                  | Mult -> "\\times"
+                  | Div -> "/"
+                  | And -> "\\land"
+                  | Or -> "\\lor"
+                  | _ -> failwith "Exp and NCR handled externally" end
+          | Relation (r) ->
+            begin match r with
+                  | Lt -> "<"
+                  | Nlt -> "\\nless"
+                  | Leq -> "\\leq"
+                  | Nleq -> "\\nleq"
+                  | Gt -> ">"
+                  | Ngt -> "\\ngtr"
+                  | Geq -> "\\geq"
+                  | Ngeq -> "\\ngeq"
+                  | Subset -> "\\subset"
+                  | NSubset -> "\\not\\subset"
+                  | SubsetEq -> "\\subseteq"
+                  | NSubsetEq -> "\\nsubseteq"
+                  | ElementOf -> "\\in"
+                  | Eq -> "="
+                  | Sim -> "\\sim"
+                  | Neq -> "\\neq"
+                  | Nsim -> "\\nsim"
+                  | Approx -> "\\approx" end in
+
+        match me with
+        | Int (i) -> i
+        | Var (v) -> v
+        | FactEq (u, m) -> String.concat "" [eval_math_eq m; " !"]
+        | NotEq (u, c) -> begin match c with | Var (v) -> String.concat "" ["\\lnot "; v] | _ -> failwith "Unexpected Operand in Not Expression" end
+        | Binop (m1, b, m2) ->
+          begin match b with
+                | Operation (Exp) -> String.concat "" [eval_math_eq m1; " ^{"; eval_math_eq m2; "}"]
+                | Operation (NCR) -> String.concat "" ["{"; eval_math_eq m1; "\\choose "; eval_math_eq m2; "}"]
+                | _ -> String.concat " " [eval_math_eq m1; eval_binop b; eval_math_eq m2] end
+        | Sum (m1, m2, m3) -> String.concat "" ["\\sum_{"; eval_math_eq m1; "}^{"; eval_math_eq m2; "} "; eval_math_eq m3]
+        | ElSum (m1, m2) -> String.concat "" ["\\sum_{"; eval_math_eq m1; "}"; eval_math_eq m2]
+        | Integ (m1, m2, m3, m4) -> String.concat "" ["\\int_{"; eval_math_eq m1; "}^{"; eval_math_eq m2; "} "; eval_math_eq m3; "\\,d "; eval_math_eq m4]
+        | Deriv (m1, m2) -> String.concat "" ["\\frac{d}{d "; eval_math_eq m2; "}"; eval_math_eq m1]
+        | ParDeriv (m1, m2) -> String.concat "" ["\\frac{\\partial}{\\partial "; eval_math_eq m2; "}"; eval_math_eq m1]
+        | Frac (m1, m2) -> String.concat "" ["\\frac{"; eval_math_eq m1; "}{"; eval_math_eq m2; "}"] in
+
       match s with
-      | MathEq (me) -> failwith ""
-      | MathEqList (me, mel) -> failwith "" in
+      | MathEq (me) -> String.concat "" ["&"; eval_math_eq me]
+      | MathEqList (me, mel) -> String.concat "" ["&"; eval_math_eq me; "\\\\\n"; eval_split mel] in
 
     match se with
     | Infer (i) -> 
@@ -307,7 +361,7 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
       out @ ["\\begin{equation*}"; lam; "\\end{equation*}"]
     | MathEquation (s) ->
       let split_string = eval_split s in
-      out @ ["\\begin{equation}\\begin{split}"; split_string; "\\end{split}\\{equation}"] in
+      out @ ["\\begin{equation*}\n\\begin{split}"; split_string; "\\end{split}\n\\end{equation*}"] in
 
   match e with
   | Equation (se) -> out @ (eval_simple_equation se [])

@@ -173,8 +173,10 @@ and math_eq =
   | NotEq of unop * math_eq
   | Binop of math_eq * binop * math_eq
   | Sum of math_eq * math_eq * math_eq
+  | ElSum of math_eq * math_eq
   | Integ of math_eq * math_eq * math_eq * math_eq
   | Deriv of math_eq * math_eq
+  | ParDeriv of math_eq * math_eq
   | Frac of math_eq * math_eq
 
 (** Type [unop] represents the different kinds of unary operations *)
@@ -182,11 +184,12 @@ and unop =
   | Fact
   | Not
 
-(** Type [binop] represents the different kinds of binary operations *)
+(** Type [binop] represents the different kinds of binary operations and relations *)
 and binop = 
   | Operation of operation
   | Relation of relation
 
+(** Type [operation] represents the different kinds of binary operations*)
 and operation =
   | Plus
   | Minus
@@ -197,7 +200,7 @@ and operation =
   | And
   | Or
 
-(** Type [relation] represents the different kinds of logical and set relations
+(** Type [relation] represents the different kinds of binary logical and set relations
     between objects *)
 and relation =
   | Lt
@@ -234,8 +237,11 @@ type equation =
 
 (** Type [table] represents a table *)
 type table =
-  | Row of text list
-  | Table of table * table
+  | TableType of row list
+
+(** Type [row] represents a row of a table *)
+and row =
+  | Row of content list
 
 (** Type [environment] represents the various kinds of environements in the SimpleTeX language *)
 type environment =

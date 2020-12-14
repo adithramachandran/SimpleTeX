@@ -26,8 +26,37 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token MATH
 %token INTEGRAL
 %token DERIV
+%token PARDERIV
 %token SUM
 %token FRAC
+%token FACT
+%token NOT
+%token PLUS
+%token MULT
+%token MINUS
+%token DIV
+%token EXP
+%token NCR
+%token AND
+%token OR
+%token LESSTHAN
+%token NOTLESSTHAN
+%token LESSEQ
+%token NOTLESSEQ
+%token GREATERTHAN
+%token NOTGREATERTHAN
+%token GREATEREQ
+%token NOTGREATEREQ
+%token ELEMENTOF
+%token SUBSET
+%token NOTSUBSET
+%token SUBSETEQ
+%token NOTSUBSETEQ
+%token EQ
+%token SIM
+%token NEQ
+%token NSIM
+%token APPROX
 %token INFERENCE
 %token STLC
 %token SYSF
@@ -72,35 +101,36 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token NOTSMALL
 %token NOTBIG
 %token NOTMULTI
-%token FACT
-%token NOT
-%token PLUS
-%token MULT
-%token MINUS
-%token DIV
-%token EXP
-%token NCR
-%token AND
-%token OR
-%token LESSTHAN
-%token NOTLESSTHAN
-%token LESSEQ
-%token NOTLESSEQ
-%token GREATERTHAN
-%token NOTGREATERTHAN
-%token GREATEREQ
-%token NOTGREATEREQ
-%token ELEMENTOF
-%token SUBSET
-%token NOTSUBSET
-%token SUBSETEQ
-%token NOTSUBSETEQ
-%token EQ
-%token SIM
-%token NEQ
-%token NSIM
-%token APPROX
 %token PERIOD
+
+%left FACT
+%left NOT
+%left PLUS
+%left MULT
+%left MINUS
+%left DIV
+%left EXP
+%left NCR
+%left AND
+%left OR
+%left LESSTHAN
+%left NOTLESSTHAN
+%left LESSEQ
+%left NOTLESSEQ
+%left GREATERTHAN
+%left NOTGREATERTHAN
+%left GREATEREQ
+%left NOTGREATEREQ
+%left ELEMENTOF
+%left SUBSET
+%left NOTSUBSET
+%left SUBSETEQ
+%left NOTSUBSETEQ
+%left EQ
+%left SIM
+%left NEQ
+%left NSIM
+%left APPROX
 
 %start <Ast.environment> prog
 
@@ -194,11 +224,14 @@ math_eq:
     | c = CONTENT { Var (c) }
     | u = unop; c = CONTENT { NotEq (u,Var(c)) }
     | m = math_eq; u = unop { FactEq (u,m) }
-    | m1 = math_eq; b = binop; m2 = math_eq { Binop (m1,b,m2) }
+    | LPAREN; b = binop; RPAREN { b }
+    | b = binop { b }
     | SUM; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY; LCURLY; m3 = math_eq; RCURLY { Sum (m1,m2,m3) }
+    | SUM; LCURLY; m1 = math_eq; RCURLY; LCURLY; m3 = math_eq; RCURLY { ElSum (m1,m3) }
     | INTEGRAL; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY; LCURLY; m3 = math_eq; RCURLY; LCURLY; m4 = math_eq; RCURLY { Integ (m1,m2,m3, m4) }
     | DERIV; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY { Deriv (m1,m2) }
-    | FRAC; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY { Frac (m1,m2) } 
+    | PARDERIV; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY { ParDeriv (m1,m2) }
+    | FRAC; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY { Frac (m1,m2) }
     ;
 
 unop:
@@ -207,33 +240,32 @@ unop:
     ;
 
 binop:
-    | PLUS { Operation (Plus) }
-    | MINUS { Operation (Minus) }
-    | MULT { Operation (Mult) }
-    | DIV { Operation (Div) }
-    | EXP { Operation (Exp) }
-    | NCR { Operation (NCR) }
-    | AND { Operation (And) }
-    | OR { Operation (Or) }
-    | LESSTHAN { Relation (Lt) }
-    | NOTLESSTHAN { Relation (Nlt) }
-    | LESSEQ { Relation (Leq) }
-    | NOTLESSEQ { Relation (Nleq) }
-    | GREATERTHAN { Relation (Gt) }
-    | NOTGREATERTHAN { Relation (Ngt) }
-    | GREATEREQ { Relation (Geq) }
-    | NOTGREATEREQ { Relation (Ngeq) }
-    | ELEMENTOF { Relation (ElementOf) }
-    | SUBSET { Relation (Subset) }
-    | NOTSUBSET { Relation (NSubset) }
-    | SUBSETEQ { Relation (SubsetEq) }
-    | NOTSUBSETEQ { Relation (NSubsetEq) }
-    | EQ { Relation (Eq) }
-    | SIM { Relation (Sim) }
-    | NEQ { Relation (Neq) }
-    | NSIM { Relation (Nsim) }
-    | APPROX { Relation (Approx) }
-    ;
+    | m1 = math_eq; PLUS; m2 = math_eq { Binop (m1,Operation (Plus),m2) }
+    | m1 = math_eq; MINUS; m2 = math_eq { Binop (m1,Operation (Minus),m2) }
+    | m1 = math_eq; MULT; m2 = math_eq { Binop (m1,Operation (Mult),m2) }
+    | m1 = math_eq; DIV; m2 = math_eq { Binop (m1,Operation (Div),m2) }
+    | m1 = math_eq; EXP; m2 = math_eq { Binop (m1,Operation (Exp),m2) }
+    | m1 = math_eq; NCR; m2 = math_eq { Binop (m1,Operation (NCR),m2) }
+    | m1 = math_eq; AND; m2 = math_eq { Binop (m1,Operation (And),m2) }
+    | m1 = math_eq; OR; m2 = math_eq { Binop (m1,Operation (Or),m2) }
+    | m1 = math_eq; LESSTHAN; m2 = math_eq { Binop (m1,Relation (Lt),m2) }
+    | m1 = math_eq; NOTLESSTHAN; m2 = math_eq { Binop (m1,Relation (Nlt),m2) }
+    | m1 = math_eq; LESSEQ; m2 = math_eq { Binop (m1,Relation (Leq),m2) }
+    | m1 = math_eq; NOTLESSEQ; m2 = math_eq { Binop (m1,Relation (Nleq),m2) }
+    | m1 = math_eq; GREATERTHAN; m2 = math_eq { Binop (m1,Relation (Gt),m2) }
+    | m1 = math_eq; NOTGREATERTHAN; m2 = math_eq { Binop (m1,Relation (Ngt),m2) }
+    | m1 = math_eq; GREATEREQ; m2 = math_eq { Binop (m1,Relation (Geq),m2) }
+    | m1 = math_eq; NOTGREATEREQ; m2 = math_eq { Binop (m1,Relation (Ngeq),m2) }
+    | m1 = math_eq; ELEMENTOF; m2 = math_eq { Binop (m1,Relation (ElementOf),m2) }
+    | m1 = math_eq; SUBSET; m2 = math_eq { Binop (m1,Relation (Subset),m2) }
+    | m1 = math_eq; NOTSUBSET; m2 = math_eq { Binop (m1,Relation (NSubset),m2) }
+    | m1 = math_eq; SUBSETEQ; m2 = math_eq { Binop (m1,Relation (SubsetEq),m2) }
+    | m1 = math_eq; NOTSUBSETEQ; m2 = math_eq { Binop (m1,Relation (NSubsetEq),m2) }
+    | m1 = math_eq; EQ; m2 = math_eq { Binop (m1,Relation (Eq),m2) }
+    | m1 = math_eq; SIM; m2 = math_eq { Binop (m1,Relation (Sim),m2) }
+    | m1 = math_eq; NEQ; m2 = math_eq { Binop (m1,Relation (Neq),m2) }
+    | m1 = math_eq; NSIM; m2 = math_eq { Binop (m1,Relation (Nsim),m2) }
+    | m1 = math_eq; APPROX; m2 = math_eq { Binop (m1,Relation (Approx),m2) }
 
 infer_list:
     | i = infer; COMMA; il = infer_list { i :: il }
@@ -367,5 +399,19 @@ lambda_args:
     ;
 
 table:
-    | { Row ([]) }
+    | rl = row_list { TableType (rl) }
+    ;
+
+row_list:
+    | r = row { [r] }
+    | r = row; SEMI; rl = row_list { r :: rl }
+    ;
+
+row:
+    | cl = cell_list { Row (cl) }
+    ;
+
+cell_list:
+    | c = CONTENT { [c] }
+    | c = CONTENT; COMMA; cl = cell_list { c :: cl }
     ;
