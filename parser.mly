@@ -8,6 +8,7 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 
 %token EOF
 %token <string> CONTENT
+%token <string> INT
 %token SEMI
 %token COLON
 %token LCURLY
@@ -23,6 +24,10 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token TABLE
 %token METADATA
 %token MATH
+%token INTEGRAL
+%token DERIV
+%token SUM
+%token FRAC
 %token INFERENCE
 %token STLC
 %token SYSF
@@ -67,8 +72,34 @@ let merge (fn,pos1,_) (_,_,pos2) = (fn,pos1,pos2)
 %token NOTSMALL
 %token NOTBIG
 %token NOTMULTI
+%token FACT
+%token NOT
 %token PLUS
 %token MULT
+%token MINUS
+%token DIV
+%token EXP
+%token NCR
+%token AND
+%token OR
+%token LESSTHAN
+%token NOTLESSTHAN
+%token LESSEQ
+%token NOTLESSEQ
+%token GREATERTHAN
+%token NOTGREATERTHAN
+%token GREATEREQ
+%token NOTGREATEREQ
+%token ELEMENTOF
+%token SUBSET
+%token NOTSUBSET
+%token SUBSETEQ
+%token NOTSUBSETEQ
+%token EQ
+%token SIM
+%token NEQ
+%token NSIM
+%token APPROX
 %token PERIOD
 
 %start <Ast.environment> prog
@@ -155,10 +186,53 @@ equation:
 
 split:
     | m = math_eq { MathEq (m) }
+    | m = math_eq; SEMI; ml = split { MathEqList (m, ml) }
     ;
 
 math_eq:
-    | { Int ("5") }
+    | i = INT { Int (i) }
+    | c = CONTENT { Var (c) }
+    | u = unop; c = CONTENT { NotEq (u,Var(c)) }
+    | m = math_eq; u = unop { FactEq (u,m) }
+    | m1 = math_eq; b = binop; m2 = math_eq { Binop (m1,b,m2) }
+    | SUM; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY; LCURLY; m3 = math_eq; RCURLY { Sum (m1,m2,m3) }
+    | INTEGRAL; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY; LCURLY; m3 = math_eq; RCURLY; LCURLY; m4 = math_eq; RCURLY { Integ (m1,m2,m3, m4) }
+    | DERIV; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY { Deriv (m1,m2) }
+    | FRAC; LCURLY; m1 = math_eq; RCURLY; LCURLY; m2 = math_eq; RCURLY { Frac (m1,m2) } 
+    ;
+
+unop:
+    | FACT { Fact }
+    | NOT { Not }
+    ;
+
+binop:
+    | PLUS { Operation (Plus) }
+    | MINUS { Operation (Minus) }
+    | MULT { Operation (Mult) }
+    | DIV { Operation (Div) }
+    | EXP { Operation (Exp) }
+    | NCR { Operation (NCR) }
+    | AND { Operation (And) }
+    | OR { Operation (Or) }
+    | LESSTHAN { Relation (Lt) }
+    | NOTLESSTHAN { Relation (Nlt) }
+    | LESSEQ { Relation (Leq) }
+    | NOTLESSEQ { Relation (Nleq) }
+    | GREATERTHAN { Relation (Gt) }
+    | NOTGREATERTHAN { Relation (Ngt) }
+    | GREATEREQ { Relation (Geq) }
+    | NOTGREATEREQ { Relation (Ngeq) }
+    | ELEMENTOF { Relation (ElementOf) }
+    | SUBSET { Relation (Subset) }
+    | NOTSUBSET { Relation (NSubset) }
+    | SUBSETEQ { Relation (SubsetEq) }
+    | NOTSUBSETEQ { Relation (NSubsetEq) }
+    | EQ { Relation (Eq) }
+    | SIM { Relation (Sim) }
+    | NEQ { Relation (Neq) }
+    | NSIM { Relation (Nsim) }
+    | APPROX { Relation (Approx) }
     ;
 
 infer_list:

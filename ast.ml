@@ -2,10 +2,6 @@
     This file describes the AST for a SimpleTeX file
 *)
 
-(** TODO: Add lambda calculus *)
-(** TODO: Add STLC *)
-(** TODO: Add System-F *)
-
 (* Parsing information: ((l1,c1),(l2,c2)) represents a symbol
    appearing at line l1 character c1 to line l2 character c2. *)
 type info = (int * int) * (int * int)
@@ -163,7 +159,7 @@ and lambda =
 and lambda_args = 
   | LambdaArgs of specialchar * block * lambda_args option
 
-(** Type [split] a list . *)
+(** Type [split] a list of mathematical equations *)
 type split =
   | MathEq of math_eq
   | MathEqList of math_eq * split
@@ -173,13 +169,13 @@ type split =
 and math_eq = 
   | Int of content
   | Var of content
-  | FactEq of math_eq * unop
+  | FactEq of unop * math_eq
   | NotEq of unop * math_eq
   | Binop of math_eq * binop * math_eq
-  | Relation of math_eq * relation * math_eq
   | Sum of math_eq * math_eq * math_eq
   | Integ of math_eq * math_eq * math_eq * math_eq
   | Deriv of math_eq * math_eq
+  | Frac of math_eq * math_eq
 
 (** Type [unop] represents the different kinds of unary operations *)
 and unop =
@@ -188,6 +184,10 @@ and unop =
 
 (** Type [binop] represents the different kinds of binary operations *)
 and binop = 
+  | Operation of operation
+  | Relation of relation
+
+and operation =
   | Plus
   | Minus
   | Mult
@@ -212,6 +212,7 @@ and relation =
   | NSubset
   | SubsetEq
   | NSubsetEq
+  | ElementOf
   | Eq
   | Sim
   | Neq

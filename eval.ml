@@ -183,8 +183,8 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
 
       match s with
       | STLCLambda (c, srb) -> String.concat "" [eval_context c; "\\vdash "; eval_stlc_rule_block srb]
-      | STLCAxiom (c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{\\hspace{1mm}}{"; eval_stlc (STLCLambda (c, srb)); "}"]
-      | STLCTree (pl, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{"; eval_stlc_premises pl []; "}{"; eval_stlc (STLCLambda (c, srb)); "}"]
+      | STLCAxiom (c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "\n{\n\\hspace{1mm}\n}\n{\n"; eval_stlc (STLCLambda (c, srb)); "\n}"]
+      | STLCTree (pl, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "\n{\n"; eval_stlc_premises pl []; "\n}\n{\n"; eval_stlc (STLCLambda (c, srb)); "\n}"]
 
     (** [eval_context c] evaluates the Ast.context [c] to its corresponding LaTeX string *)
     and eval_context (c:Ast.context) : string =
@@ -222,8 +222,8 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
 
       match s with
       | SystemFLambda (tc, c, srb) -> String.concat "" [eval_type_context tc; ","; eval_context c; "\\vdash "; eval_sysf_rule_block srb]
-      | SystemFAxiom (tc, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{\\hspace{1mm}}{"; eval_sysf (SystemFLambda(tc, c, srb)); "}"]
-      | SystemFTree (pl, tc, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "{"; eval_sysf_premises pl []; "}{"; eval_sysf (SystemFLambda(tc, c, srb)); "}"]
+      | SystemFAxiom (tc, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "\n{\n\\hspace{1mm}\n}\n{\n"; eval_sysf (SystemFLambda(tc, c, srb)); "\n}"]
+      | SystemFTree (pl, tc, c, srb, n) -> String.concat "" ["\\inferrule*[Right="; n; "]"; "\n{\n"; eval_sysf_premises pl []; "\n}\n{\n"; eval_sysf (SystemFLambda(tc, c, srb)); "\n}"]
 
     (** [eval_context tc] evaluates the Ast.type_context [tc] to its corresponding LaTeX string *)
     and eval_type_context (tc:Ast.type_context) : string =
@@ -280,11 +280,17 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
         mapping
       | Axiom (m, c) ->
         let mapping = eval_mapping m in
-        String.concat "" ["\\inferrule*[Right="; c; "]"; "{\\hspace{1mm}}{"; mapping; "}"]
+        String.concat "" ["\\inferrule*[Right="; c; "]"; "\n{\n\\hspace{1mm}\n}\n{\n"; mapping; "\n}"]
       | Rule (il, m, c) ->
         let premises = eval_infer_list il [] in
         let mapping = eval_mapping m in
-        String.concat "" ["\\inferrule*[Right="; c; "]"; "{"; premises; "}"; "{"; mapping; "}"] in
+        String.concat "" ["\\inferrule*[Right="; c; "]"; "\n{\n"; premises; "\n}\n"; "{\n"; mapping; "\n}"] in
+
+    (** [eval_split s] evaluates the split environment [s] to its corresponding string in LaTeX. *)
+    let rec eval_split (s:Ast.split) : string =
+      match s with
+      | MathEq (me) -> failwith ""
+      | MathEqList (me, mel) -> failwith "" in
 
     match se with
     | Infer (i) -> 
@@ -298,8 +304,10 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
       out @ ["\\begin{mathpar}"; sysf; "\\end{mathpar}"]
     | Lambda (l) -> 
       let lam = eval_lambda l in
-      out @ ["\\begin{equation*}"] @ [lam] @ ["\\end{equation*}"]
-    | _ -> failwith "Unimplemented" in
+      out @ ["\\begin{equation*}"; lam; "\\end{equation*}"]
+    | MathEquation (s) ->
+      let split_string = eval_split s in
+      out @ ["\\begin{equation}\\begin{split}"; split_string; "\\end{split}\\{equation}"] in
 
   match e with
   | Equation (se) -> out @ (eval_simple_equation se [])

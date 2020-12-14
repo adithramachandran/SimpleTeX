@@ -46,6 +46,7 @@ rule read =
   parse
   | white { read lexbuf }
   | '\n' { newline lexbuf; read lexbuf }
+  | int { let i = Lexing.lexeme lexbuf in INT (i) }
   | string { let s = Lexing.lexeme lexbuf in CONTENT (String.sub s 1 ((String.length s) - 2)) }
   | "{" { LCURLY }
   | "}" { RCURLY }
@@ -76,6 +77,8 @@ rule read =
   | "-/>" { NOTSMALL }
   | "=/>" { NOTBIG }
   | "-/>*" { NOTMULTI }
+  | "!" { FACT }
+  | "not" { NOT }
   | "+" { PLUS }
   | "*" { MULT }
   | "metadata" { METADATA }
