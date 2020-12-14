@@ -81,6 +81,30 @@ rule read =
   | "not" { NOT }
   | "+" { PLUS }
   | "*" { MULT }
+  | "-" { MINUS }
+  | "/" { DIV }
+  | "^" { EXP }
+  | "ncr" { NCR }
+  | "and" { AND }
+  | "or" { OR }
+  | "<" { LESSTHAN }
+  | "/<" { NOTLESSTHAN }
+  | "<=" { LESSEQ }
+  | "/<=" { NOTLESSEQ }
+  | ">" { GREATERTHAN }
+  | "/>" { NOTGREATERTHAN }
+  | ">=" { GREATEREQ }
+  | "/>=" { NOTGREATEREQ }
+  | "el" { ELEMENTOF }
+  | "sub" { SUBSET }
+  | "nsub" { NOTSUBSET }
+  | "subeq" { SUBSETEQ }
+  | "nsubeq" { NOTSUBSETEQ }
+  | "=" { EQ }
+  | "sim" { SIM }
+  | "!=" { NEQ }
+  | "nsim" { NSIM }
+  | "approx" { APPROX }
   | "metadata" { METADATA }
   | "author" { AUTHOR }
   | "date" { DATE }
