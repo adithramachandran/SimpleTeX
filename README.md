@@ -207,7 +207,7 @@ The links below will take you to the corresponding equation type:
 The **infer** equation can contain the following:
 * {**S**}
 * {**D** **B** **B** **D** **MT** **D** **B** **B** **D**} - standard mapping
-* {**S2**    **D** **B** **B** **D** **MT** **D** **B** **B** **D**    **S2**} - Hoare triple with precondition **S1** and postcondition **S2**
+* {**S1**    **D** **B** **B** **D** **MT** **D** **B** **B** **D**    **S2**} - Hoare triple with precondition **S1** and postcondition **S2**
 * {standard mapping or Hoare triple}{**S**} - an axiom titled **S**
 * {one or more standard mappings, hoare triples, or inferences, each separated by a comma}{a standard mapping or Hoare triple}{**S**} - A proof tree with the premises in the first set of curly braces, the conclusion in the second set of curly braces, with title **S**
 
