@@ -1,5 +1,3 @@
-> TODO: Replace all underscores
-
 # SimpleTeX: A Simplified Typesetting Language
 SimpleTeX is a typesetting language built for speed and brevity, and outputs LaTeX code!
 
