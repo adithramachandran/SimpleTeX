@@ -21,13 +21,13 @@ Each SimpleTeX file is separated into a list of **environments**. Given 3 enviro
 
 Note that the terminal environment does not have a **semicolon** after it! Click on a link below to see the syntax for the corresponding environment, and note that if a value is required to be **quote delimited**, it will be depicted as such:
 
-### [settings](#settings)
-### [metadata](#metadata)
-### [text](#text)
-### [equation](#equations)
-### [table](#tables)
+### [settings](#set)
+### [metadata](#met)
+### [text](#tex)
+### [equation](#equ)
+### [table](#tab)
 
-## <a name="settings"></a> settings
+## <a name="set"></a> settings
 The **settings** environment must be the **first** environment in a SimpleTeX document, or must be omitted altogether. For 3 settings **s1**, **s2**, and **s3**, the format for a settings environment is as below:
 
 ```
@@ -74,7 +74,7 @@ If **fontsize** is not mentioned, the default LaTeX font will be used.
 * onepointfive
 * double
 
-## <a name="metadata"></a> metadata
+## <a name="met"></a> metadata
 The **metadata** environment must be the **second** environment in a SimpleTeX document, or the **first** if the **settings** environment has been omitted, or must be omitted altogether. For 3 metadata tags **m1**, **m2**, and **m3**, the format for a settings environment is as below:
 
 ```
@@ -96,7 +96,7 @@ A **quote delimited** string containing the date, "January 1st, 2000" for exampl
 ### title
 A **quote delimited** string containing the title, "My First SimpleTeX Document" for example.
 
-## <a name="text"></a> text
+## <a name="tex"></a> text
 The **text** environment contains a list of **quote delimited** strings, separated by **semicolons**. These strings may also contain LaTeX code.
 
 ```
@@ -107,7 +107,7 @@ The **text** environment contains a list of **quote delimited** strings, separat
 }...
 ```
 
-## <a name="equations"></a> equation
+## <a name="equ"></a> equation
 Click the links below to look at constructs that are used across different equation subtypes:
 
-#### [context](#context)
+#### [context](#con)
