@@ -235,12 +235,8 @@ type equation =
   | Equation of simpleequation
   | EquationList of simpleequation * equation
 
-(** Type [table] represents a table *)
-type table =
-  | TableType of row list
-
 (** Type [row] represents a row of a table *)
-and row =
+type row =
   | Row of content list
 
 (** Type [environment] represents the various kinds of environements in the SimpleTeX language *)
@@ -249,6 +245,6 @@ type environment =
   | Settings of setting
   | Text of text
   | EquationEnv of equation
-  | Table of table
+  | Table of row list
   | ListEnv of environment * environment
   | Nil

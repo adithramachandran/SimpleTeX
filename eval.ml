@@ -1,8 +1,6 @@
 open Ast
 open Printf
 
-(** TODO: Change string delimiter *)
-
 exception MetadataException of string
 exception SettingException of string
 
@@ -367,14 +365,36 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
   | Equation (se) -> out @ (eval_simple_equation se [])
   | EquationList (se, e) -> out @ (eval_simple_equation se []) @ (eval_equation e [])
 
+(** [eval_table t] evaluates the Ast.table [t] to its corresponding LaTeX string *)
+and eval_table (rl:Ast.row list) (s:string list) : string =
+  
+  (** [eval_row r] evaluates the Ast.row [r] to its corresponding LaTeX string *)
+  let eval_row (r:Ast.row) : string =
+    match r with
+    | Row (cl) -> String.concat " & " cl in
+
+  match rl with
+  | [] -> String.concat " \\\\\n" s
+  | h :: t -> eval_table t (s @ [eval_row h])
+
 (** [eval ast out] evaluates the Ast.environment ast to a list of strings,
     appends it to [out], and returns the result of this*)
 and eval (ast:Ast.environment) (out:string list) : string list =
+  
+  (** [construct_c_string t] is a helper function that constructs the number of columns used in the tabular LaTeX environment *)
+  let rec construct_c_string (t:Ast.row list) : string =
+    let i = begin match t with
+                  | [] -> failwith "Empty List1"
+                  | h :: t -> begin match h with Row (cl) -> List.length cl end end in
+    construct_c_string_helper i []
+
+  and construct_c_string_helper (i:int) (s:string list) =
+    if i = 0 then String.concat " " s
+    else construct_c_string_helper (i-1) ("c" :: s) in
+
   match ast with
   | Text (text) -> out @ (eval_text text)
   | EquationEnv(e) -> out @ (eval_equation e [])
+  | Table (t) -> out @ [String.concat "" ["\\begin{center}\n\\begin{tabular}{"; construct_c_string t; "}\n"; eval_table t []; "\n\\end{tabular}\n\\end{center}"]]
   | ListEnv (env, rem) -> out @ (eval env []) @ (eval rem [])
-  (* | ListEnv (env,rem) -> failwith("Unimplemented") *)
-  (* | Equation eq -> failwith("Unimplemented") *)
-  (* | Table tbl -> failwith("Unimplemented") *)
   | _ -> failwith("Unimplemented")

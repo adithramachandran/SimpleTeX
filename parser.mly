@@ -146,7 +146,7 @@ expr:
     | LBRACKET; SETTINGS; RBRACKET; LCURLY; settings = setting_list; RCURLY { Settings (settings) }  
     | LBRACKET; TEXT; RBRACKET; LCURLY; text = text; RCURLY { Text(text) }
     | LBRACKET; EQUATION; RBRACKET; LCURLY; equation = equation_list; RCURLY { EquationEnv (equation) }
-    | LBRACKET; TABLE; RBRACKET; LCURLY; table = table; RCURLY { Table (table) }
+    | LBRACKET; TABLE; RBRACKET; LCURLY; table = row_list; RCURLY { Table (table) }
     ;
 
 metadata_list:
@@ -398,10 +398,6 @@ lambda_args:
     | sc = specialchar; b = block; la = lambda_args { LambdaArgs (sc,b,Some(la)) }
     ;
 
-table:
-    | rl = row_list { TableType (rl) }
-    ;
-
 row_list:
     | r = row { [r] }
     | r = row; SEMI; rl = row_list { r :: rl }
@@ -413,5 +409,7 @@ row:
 
 cell_list:
     | c = CONTENT { [c] }
+    | i = INT { [i] }
     | c = CONTENT; COMMA; cl = cell_list { c :: cl }
+    | i = INT; COMMA; cl = cell_list { i :: cl }
     ;
