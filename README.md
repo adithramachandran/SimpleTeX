@@ -1,3 +1,5 @@
+> TODO: Replace all underscores
+
 # SimpleTeX: A Simplified Typesetting Language
 SimpleTeX is a typesetting language built for speed and brevity, and outputs LaTeX code!
 
@@ -19,7 +21,7 @@ Each SimpleTeX file is separated into a list of **environments**. Given 3 enviro
 }
 ```
 
-Note that the terminal environment does not have a **semicolon** after it! Click on a link below to see the syntax for the corresponding environment, and note that if a value is required to be **quote delimited**, it will be depicted as such:
+Note that the terminal environment does not have a **semicolon** after it! Click on a link below to see the syntax for the corresponding environment, and note that if a value is required to be **quote delimited**, it will be depicted as such. If anything is unclear after reading the documentation, please view **sample.sltx** for examples of everything discussed below.
 
 ### [settings](#set)
 ### [metadata](#met)
@@ -108,6 +110,74 @@ The **text** environment contains a list of **quote delimited** strings, separat
 ```
 
 ## <a name="equ"></a> equation
+<span style="color:#eeeeee">All special characters are preceded by an <b>underscore</b>.</span>
+
+In all documentation below, a **quote delimited** string will be denoted as **S**.
+
 Click the links below to look at constructs that are used across different equation subtypes:
 
-#### [context](#con)
+#### [blocks](#blo)
+#### [special characters](#sc)
+#### [contexts](#con)
+#### [type_contexts](#tcon)
+#### [delimiters](#del)
+#### [maptypes](#mapt)
+
+### <a name="sc"></a>special characters
+Special characters are used in almost every type of equation. They are:
+* _sig - sigma
+* _sig' - sigma'
+* _sig'' - sigma''
+* _lam - lambda
+* _Lam - capital lambda
+* _Gamma - capital gamma
+* _Delta - capital delta
+* _tau - tau
+* _tau' - tau'
+* _tau0 - tau_0
+* _tau1 - tau_1
+* _tau2 - tau_2
+
+In all subsequent documentation, special characters will be referred to as **SC**.
+
+### <a name="blo"></a>blocks
+Blocks are the building blocks to many other equation types. They can be:
+* **SC**
+* **S**
+* **S**:**S**
+* **S**:**SC**
+* **S**:**S**.**S or SC**
+* **S**:(**S or SC**)+(**S or SC**)
+* **S**:(**S or SC**)\*(**S or SC**)
+* **S**:(**S or SC**)->(**S or SC**)
+
+All blocks with colons indicated typed expressions. For instance, "x":(("int")->("int"))->("int") indicates that x has type (int->int)->int. In all subsequent documentation, blocks will be referred to as **B**.
+
+### <a name="con"></a>contexts
+Contexts can be:
+* ()
+* (_Gamma)
+* (_Gamma, **B1**, **B2**, ........)
+
+In all subsequent documentation, contexts will be referred to as **C**.
+
+### <a name="tcon"></a>type_contexts
+Type Contexts can be:
+* ()
+* (_Delta)
+* (_Delta, **B1**, **B2**, ........)
+
+In all subsequent documentation, type contexts will be referred to as **TC**.
+
+### <a name="del"></a> delimiters
+Delimiters include:
+* << - left angle bracket
+* \>\> - right angle bracket
+
+In all subsequent documentation, delimiters will be referred to as **D**.
+
+### <a name="mapt"></a>maptypes
+Map Types include:
+* -> - small step
+* => - big step
+* -*>

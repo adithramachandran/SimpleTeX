@@ -145,6 +145,7 @@ and block =
 
 and var_type =
   | StrType of content
+  | SpecialCharType of specialchar
   | Tau
   | TauPrime
   | TauZero

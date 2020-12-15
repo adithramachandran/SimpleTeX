@@ -378,6 +378,7 @@ maptype:
 
 var_type:
     | c = CONTENT { StrType (c) }
+    | sc = specialchar { SpecialCharType (sc) }
     | TAU { Tau }
     | TAUPRIME { TauPrime }
     | TAUZERO { TauZero }

@@ -125,6 +125,7 @@ and eval_equation (e:Ast.equation) (out:string list) : string list =
       let rec eval_var_type (vt:Ast.var_type) : string = 
         match vt with
         | StrType (c) -> String.concat "" ["\\textbf{"; c; "}"]
+        | SpecialCharType (sc) -> eval_special_character sc
         | Tau -> "\\tau"
         | TauPrime -> "\\tau'"
         | TauZero -> "\\tau_0"

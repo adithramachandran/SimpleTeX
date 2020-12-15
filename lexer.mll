@@ -58,7 +58,7 @@ rule read =
   | "." { PERIOD }
   | "<<" { LANGLE }
   | ">>" { RANGLE }
-  | "_sig''" { SIGMAPRIME }
+  | "_sig''" { SIGMADOUBLEPRIME }
   | "_sig'" { SIGMAPRIME }
   | "_sig" { SIGMA }
   | "_lam" { LAM }
