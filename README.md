@@ -29,7 +29,7 @@ Note that the terminal environment does not have a **semicolon** after it! Click
 ### [equation](#equ)
 ### [table](#tab)
 
-## <a name="set"></a> settings
+# <a name="set"></a> settings
 The **settings** environment must be the **first** environment in a SimpleTeX document, or must be omitted altogether. For 3 settings **s1**, **s2**, and **s3**, the format for a settings environment is as below:
 
 ```
@@ -76,7 +76,7 @@ If **fontsize** is not mentioned, the default LaTeX font will be used.
 * onepointfive
 * double
 
-## <a name="met"></a> metadata
+# <a name="met"></a> metadata
 The **metadata** environment must be the **second** environment in a SimpleTeX document, or the **first** if the **settings** environment has been omitted, or must be omitted altogether. For 3 metadata tags **m1**, **m2**, and **m3**, the format for a settings environment is as below:
 
 ```
@@ -98,7 +98,7 @@ A **quote delimited** string containing the date, "January 1st, 2000" for exampl
 ### title
 A **quote delimited** string containing the title, "My First SimpleTeX Document" for example.
 
-## <a name="tex"></a> text
+# <a name="tex"></a> text
 The **text** environment contains a list of **quote delimited** strings, separated by **semicolons**. These strings may also contain LaTeX code.
 
 ```
@@ -109,10 +109,20 @@ The **text** environment contains a list of **quote delimited** strings, separat
 }...
 ```
 
-## <a name="equ"></a> equation
-<span style="color:#eeeeee">All special characters are preceded by an <b>underscore</b>.</span>
+# <a name="equ"></a> equation
+All special characters are preceded by an <b>underscore</b>.
 
-In all documentation below, a **quote delimited** string will be denoted as **S**.
+In all documentation below, a **quote delimited** string will be denoted as **S**, and a number, which includes positive and negative integers and floats, will be denoted as **N**.
+
+For 3 equations **e1**, **e2**, and **e3**, the format for an equation environment is as below:
+
+```
+[equation] {
+    e1: ...code for e1...;
+    e2: ...code for e2...;
+    e3: ...code for e3
+}...
+```
 
 Click the links below to look at constructs that are used across different equation subtypes:
 
@@ -144,12 +154,12 @@ In all subsequent documentation, special characters will be referred to as **SC*
 Blocks are the building blocks to many other equation types. They can be:
 * **SC**
 * **S**
-* **S**:**S**
-* **S**:**SC**
-* **S**:**S**.**S or SC**
-* **S**:(**S or SC**)+(**S or SC**)
-* **S**:(**S or SC**)\*(**S or SC**)
-* **S**:(**S or SC**)->(**S or SC**)
+* **S** : **S**
+* **S** : **SC**
+* **S** : **S** . **S or SC**
+* **S** : (**S or SC**) + (**S or SC**)
+* **S** : (**S or SC**) * (**S or SC**)
+* **S** : (**S or SC**) -> (**S or SC**)
 
 All blocks with colons indicated typed expressions. For instance, "x":(("int")->("int"))->("int") indicates that x has type (int->int)->int. In all subsequent documentation, blocks will be referred to as **B**.
 
@@ -180,4 +190,94 @@ In all subsequent documentation, delimiters will be referred to as **D**.
 Map Types include:
 * -> - small step
 * => - big step
-* -*>
+* ->* - multi step
+* -/> - does not small step
+* =/> - does not big step
+* -/>* - does not multi step
+
+In all subsequent documentation, map types will be referred to as **MT**.
+
+## Equations:
+The links below will take you to the corresponding equation type:
+### [inference rules](#inf)
+### [STLC rules](#stlc)
+### [System-F rules](#sysf)
+### [Lambda equations](#lambda)
+### [mathematical equations](#math)
+
+## <a name="inf"> infer
+The **infer** equation can contain the following:
+* {**S**}
+* {**D** **B** **B** **D** **MT** **D** **B** **B** **D**} - standard mapping
+* {**S2**    **D** **B** **B** **D** **MT** **D** **B** **B** **D**    **S2**} - Hoare triple with precondition **S1** and postcondition **S2**
+* {standard mapping or Hoare triple}{**S**} - an axiom titled **S**
+* {one or more standard mappings, hoare triples, or inferences, each separated by a comma}{a standard mapping or Hoare triple}{**S**} - A proof tree with the premises in the first set of curly braces, the conclusion in the second set of curly braces, with title **S**
+
+## <a name="lambda"></a> lambda
+The **lambda** equation is defined as {one or more (_lam or _Lam **B**) pairs **.** **B**}, which is a lambda with arguments described by the (_lam or _Lam **B**) pairs and body **B**.
+
+All lambdas will be referenced using **L** henceforth.
+
+## <a name="stlc"> stlc
+The **stlc** equation is defined as:
+* {**C ,** (**L** or **B**)} - a standard STLC lambda
+* {a standard STLC lambda}{**S**} - an STLC Axiom with title **S**
+* {a list of one or more comma separated (**S** or (**C** **B**))}{a standard STLC lambda}{**S1**} - an STLC rule with the premises in the first set of curly braces, the conclusion in the second set of curly braces, with title **S1**.
+
+## <a name="sysf"> sysf
+The **sysf** equation is defined as:
+* {**TC ,** **C ,** (**L** or **B**)} - a standard System-F lambda
+* {a standard STLC lambda}{**S**} - a System-F Axiom with title **S**
+* {a list of one or more comma separated (**S** or (**TC** **C** **B**))}{a standard System-F lambda}{**S1**} - a System-F rule with the premises in the first set of curly braces, the conclusion in the second set of curly braces, with title **S1**.
+
+## <a name="math"> math
+The **math** equation is defined as a list of **semicolon** separated sub-equations. For the sake of brevity, the abbreviation **SE** is used for sub-equations. These sub-equations can be:
+* **N**
+* **S** -  a variable
+* not **S** -  the logical negation of a variable
+* **SE**! - the factorial of **SE**
+* **SE1** binop **SE2** - a binary operation between **SE1** and **SE2**. binary operations include:
+    * +
+    * -
+    * *
+    * /
+    * ^
+    * ncr - **SE1** choose **SE2**
+    * and
+    * or
+    * <
+    * /<
+    * <=
+    * /<=
+    * \>
+    * /\>
+    * \>=
+    * /\>=
+    * subset
+    * nsubset
+    * subseteq
+    * nsubseteq
+    * =
+    * sim
+    * !=
+    * nsim
+    * approx
+* sum : {**SE1**}{**SE2**}{**SE3**} - summation notation with lower bound **SE1**, upper bound **SE2**, and body **SE3**
+* sum : {**SE1**}{**SE2**} - summation notation with lower bound **SE1** and body **SE2**. Useful for summing over elements of a set.
+* integ : {**SE1**}{**SE2**}{**SE3**}{**SE4**} - definite integral with lower bound **SE1**, upper bound **SE2**, body **SE3**, taken with respect to **SE4**
+* deriv : {**SE1**}{**SE2**} - derivative of **SE1** with respect to **SE2**
+* parderiv : {**SE1**}{**SE2**} - partial derivative of **SE1** with respect to **SE2**
+* frac : {**SE1**}{**SE2**} - fraction representation of **SE1**/**SE2**.
+
+# <a name="tab"></a> table
+Each cell in a table is either **N** or **S**. In table, let us call a cell **CE**. A table is written as:
+
+```
+[table] {
+    CE11,CE12,CE13,CE14,......,CE1n;
+    ...............................;
+    ...............................;
+    CEm1,CEm2,CEm3,CEm4,......,CEmn;
+}
+```
+This is a table with **m** rows and **n** columns.
