@@ -50,6 +50,7 @@ The following settings are available:
 * "14pt"
 * "17pt"
 * "20pt"
+
 The remaining settings can be entered in any order.
 
 ### pagestyle
