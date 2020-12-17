@@ -1,0 +1,69 @@
+[settings] {
+    fontsize: "12pt";
+    pagestyle: letter;
+    pageorient: portrait;
+    marginsize: "1.5in";
+    fontstyle: times;
+    linespacing: double
+};
+[metadata] {
+    author: "Adith Ramachandran (ar729), Atul Ganju (ag2222)";
+    title: "SimpleTeX Sample";
+    date: "December 4, 2020"
+};
+[text] {
+    "Welcome to the SimpleTeX sample document! Assuming you've pasted this LaTeX file into a compiler (we prefer OverLeaf), you should be reading about our new features! You can look at the sample.sltx doc to see how we formatted this document.";
+    "SimpleTeX now supports multiple paragraphs in one text environment. This is useful if you're typing large documents, like essays.";
+    "This document was typeset in non-standard settings, including 12pt default font size, Times font, an margin size of 1.5in, double line spacing, and letter size paper";
+    "SimpleTeX now also supports adding your own metadata, allowing for custom titles, authors, and dates.";
+    "SimpleTeX also supports inference rules, including axioms, inference rule trees, and Hoare triples. The LaTeX code that you need to type for an axiom has now changed from \verb|'\ usepackage{mathpartir}|\newline\verb|\ begin{mathpar}\ inferrule*[Right=Expr]{\ hspace{1mm}}|\newline\verb|{\ langle\ sigma, e\ rangle\ rightarrow\ langle\ sigma',|\newline\verb| e'\ rangle}\ end{mathpar}'| to \newline\verb|'infer: {<<_sig, 'e'>> -> <<_sig','e''>>}{'Expr'}'|. Now, that's what we call an improvement! See below for examples of some arbitrary inference rules (big step semantics are limited since as of now, we require the '\verb|<<|' and '\verb|>>|' delimiters are required, but this will change in the last sprint)!"
+};
+[equation] {
+    infer: {<<_sig, "e">> -> <<_sig',"e'">>}{"Expr"};
+    infer: {
+        {<<_sig, "e_1">> => "n_1"},
+        {<<_sig, "e_2">> => "n_2"},
+        {"n=n_1+n_2"}
+    }{
+        <<_sig, "e_1+e_2">>=><<_sig, "n">>
+    }{
+        "Plus"
+    };
+    infer: {"n = 5"<<_sig,"n">> -/>* <<_sig,"n">>"n = 5"}{"Int"};
+    lambda: {_lam "x":"int" _lam "y":"unit"."x+5":(("int")+("unit"))->("unit")};
+    stlc: {(_Gamma), _lam "x":"int"."x":("int")->("int")};
+    stlc: {(_Gamma), "n":"int"}{"T-Int"};
+    stlc: {
+        (_Gamma, "x":_tau) "e":_tau'
+    }{
+        (_Gamma), _lam "x":_tau . "e":(_tau)->(_tau')
+    }{
+        "T-Abs"
+    };
+    sysf: {(_Delta), (_Gamma), _Lam "X"."e":_forall "X"._tau};
+    sysf: {(_Delta), (_Gamma), "x":_tau}{"$\Gamma(x):\tau$"};
+    sysf: {
+        (_Delta, "X") (_Gamma) "e":_tau
+    }{
+        (_Delta), (_Gamma), _Lam "X"."e":_forall "X"._tau
+    }{
+        "Abs"
+    };
+    math:{
+        "x" = 5;
+        "y" = 5!;
+        "z" = "true";
+        "zz" = not "z";
+        0.999999999 approx 1;
+        sum {"x"in"X"}{7 choose "x" * 0.2 ^ (7 - "x") * 0.8 ^ "x"};
+        integ {0}{100}{"x"^4+"3x"^3-"7x"^2+3}{"x"}
+    }
+};
+[table] {
+    1,2,3,4,5;
+    1,2,3,4,5;
+    1,2,3,4,5
+};
+[text] {
+    "\emph{Hint:} If you ever feel the need to do so, you can always write \LaTeX\ code in an sltx string, provided that it doesn't include any quotation marks. We made use of this in the second System-F rule to use an in-line equation as the name of the rule!"
+}

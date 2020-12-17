@@ -1,0 +1,10 @@
+[settings] {
+    fontsize: "20pt";
+    pagestyle: letter;
+    pageorient: portrait;
+    marginsize: "1.5in";
+    linespacing: double
+};
+[text] {
+    "A huge, simple SimpleTeX document with custom settings."
+}
